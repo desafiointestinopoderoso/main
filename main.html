@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consolidado de Despesas - Jan a Mar/2026</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --card-2: #f9fbff;
+      --text: #1f2a37;
+      --muted: #667085;
+      --line: #dbe4f0;
+      --primary: #1f6feb;
+      --primary-soft: #eaf2ff;
+      --accent: #0f766e;
+      --danger: #b42318;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #eef4fb 0%, #f8fbff 100%);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1f6feb 0%, #0f766e 100%);
+      color: white;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 28px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      line-height: 1.15;
+    }
+
+    .hero p {
+      margin: 0;
+      color: rgba(255,255,255,0.92);
+      font-size: 15px;
+    }
+
+    .month-nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .month-link {
+      text-decoration: none;
+      background: var(--card);
+      color: var(--text);
+      padding: 18px;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .month-link:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    .month-link strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .month {
+      margin-bottom: 34px;
+      scroll-margin-top: 20px;
+    }
+
+    .month-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .month-header {
+      padding: 24px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .month-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .month-title h2 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .month-subtitle {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 14px;
+    }
+
+    .total-box {
+      background: var(--primary-soft);
+      border: 1px solid #cfe0ff;
+      border-radius: 16px;
+      padding: 14px 18px;
+      min-width: 290px;
+    }
+
+    .total-box .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .total-box .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .total-box .split {
+      font-size: 14px;
+      color: #314056;
+      line-height: 1.45;
+    }
+
+    .summary-grid {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      background: #fbfdff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .summary-item {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .summary-item .name {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .summary-item .amount {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .accordion {
+      padding: 18px 24px 24px;
+    }
+
+    details.category {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--card);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    details.category[open] {
+      box-shadow: 0 10px 24px rgba(31, 111, 235, 0.08);
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: var(--card-2);
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .summary-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .summary-text strong {
+      display: block;
+      font-size: 17px;
+      line-height: 1.25;
+    }
+
+    .summary-text span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .summary-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .amount-badge {
+      background: #eef6ef;
+      color: var(--accent);
+      border: 1px solid #cfe7d6;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .chevron {
+      font-size: 18px;
+      transition: transform 0.2s ease;
+      color: var(--muted);
+    }
+
+    details[open] .chevron {
+      transform: rotate(180deg);
+    }
+
+    .content {
+      padding: 0 20px 18px;
+    }
+
+    .subhead {
+      margin: 16px 0 10px;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    ul.entries {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    ul.entries li {
+      display: grid;
+      grid-template-columns: 100px 1fr auto;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid #edf2f7;
+      align-items: start;
+    }
+
+    .date {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .desc {
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .value {
+      font-weight: 700;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    .note {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px dashed #cdd8e5;
+      background: #fafcff;
+      border-radius: 16px;
+    }
+
+    .note h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .note ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #445164;
+      line-height: 1.55;
+    }
+
+    .footer-space {
+      height: 16px;
+    }
+
+    @media (max-width: 760px) {
+      .container { padding: 18px 12px 32px; }
+      .hero h1 { font-size: 25px; }
+      .month-title h2 { font-size: 22px; }
+      .total-box { min-width: auto; width: 100%; }
+      ul.entries li {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .value { white-space: normal; }
+      summary {
+        align-items: flex-start;
+      }
+      .summary-right {
+        align-self: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Consolidado de despesas — Janeiro, Fevereiro e Março/2026</h1>
+      <p>Painel organizado por mês, com totais por categoria e detalhamento completo de cada lançamento. Clique no ícone de cada categoria para expandir ou recolher os itens.</p>
+    </section>
+
+    <section class="month-nav">
+      <a class="month-link" href="#janeiro">
+        <strong>Janeiro/2026</strong>
+        <span>Total geral: R$ 188.638,63</span>
+      </a>
+      <a class="month-link" href="#fevereiro">
+        <strong>Fevereiro/2026</strong>
+        <span>Total geral: R$ 177.634,08</span>
+      </a>
+      <a class="month-link" href="#marco">
+        <strong>Março/2026</strong>
+        <span>Total geral: R$ 188.401,60</span>
+      </a>
+    </section>
+
+    <section id="janeiro" class="month">
+      <div class="month-card">
+        <div class="month-header">
+          <div class="month-title">
+            <div>
+              <h2>Janeiro — Conta corrente + cartão</h2>
+              <div class="month-subtitle">Consolidado mensal com categorização e detalhamento integral dos lançamentos informados.</div>
+            </div>
+            <div class="total-box">
+              <div class="label">Total geral</div>
+              <div class="value">R$ 188.638,63</div>
+              <div class="split">Conta corrente: R$ 105.233,14<br>Cartão: R$ 83.405,49</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-item"><div class="name">Insumos médicos e farmacêuticos</div><div class="amount">R$ 68.184,30</div></div>
+          <div class="summary-item"><div class="name">Equipamentos e locação técnica</div><div class="amount">R$ 32.300,00</div></div>
+          <div class="summary-item"><div class="name">Marketing e publicidade</div><div class="amount">R$ 11.840,50</div></div>
+          <div class="summary-item"><div class="name">RH (equipe e nutrição)</div><div class="amount">R$ 16.859,82</div></div>
+          <div class="summary-item"><div class="name">Imóvel (aluguel e condomínio)</div><div class="amount">R$ 9.852,70</div></div>
+          <div class="summary-item"><div class="name">Tributos e encargos</div><div class="amount">R$ 23.222,72</div></div>
+          <div class="summary-item"><div class="name">Tecnologia, software e telecom</div><div class="amount">R$ 513,69</div></div>
+          <div class="summary-item"><div class="name">Seguros</div><div class="amount">R$ 242,94</div></div>
+          <div class="summary-item"><div class="name">Serviços administrativos e operacionais</div><div class="amount">R$ 11.621,96</div></div>
+        </div>
+
+        <div class="accordion">
+          <details class="category" open>
+            <summary>
+              <div class="summary-left"><div class="icon">💉</div><div class="summary-text"><strong>1. Insumos médicos e farmacêuticos</strong><span>Conta corrente + cartão</span></div></div>
+              <div class="summary-right"><span class="amount-badge">R$ 68.184,30</span><span class="chevron">⌄</span></div>
+            </summary>
+            <div class="content">
+              <div class="subhead">Conta corrente</div>
+              <ul class="entries">
+                <li><span class="date">02/01</span><span class="desc">MEDVIVA PRODUTOS PARA A SAÚDE</span><span class="value">R$ 305,95</span></li>
+                <li><span class="date">05/01</span><span class="desc">Pix para BIO MEDS BRASIL</span><span class="value">R$ 8.000,00</span></li>
+                <li><span class="date">07/01</span><span class="desc">Pix para IMMUNO VITA MANIPULAÇÃO</span><span class="value">R$ 2.859,00</span></li>
+                <li><span class="date">08/01</span><span class="desc">Pix para STIN PHARMA</span><span class="value">R$ 4.657,60</span></li>
+                <li><span class="date">08/01</span><span class="desc">Pix para STIN PHARMA</span><span class="value">R$ 21.019,75</span></li>
+              </ul>
+              <div class="subhead">Cartão</div>
+              <ul class="entries">
+                <li><span class="date">—</span><span class="desc">CENTRAL INJETÁVEIS (parc. 9/10)</span><span class="value">R$ 169,22</span></li>
+                <li><span class="date">—</span><span class="desc">UTILIDADES CLÍNICAS (parc. 9/10)</span><span class="value">R$ 73,83</span></li>
+                <li><span class="date">—</span><span class="desc">BLEYMED (parc. 8/8)</span><span class="value">R$ 1.137,50</span></li>
+                <li><span class="date">—</span><span class="desc">CENTRALFARMA (parc. 7/12)</span><span class="value">R$ 622,41</span></li>
+                <li><span class="date">—</span><span class="desc">CENTRALFARMA (parc. 6/12)</span><span class="value">R$ 550,35</span></li>
+                <li><span class="date">—</span><span class="desc">BIOS FARMACÊUTICA (parc. 6/6)</span><span class="value">R$ 1.814,00</span></li>
+                <li><span class="date">—</span><span class="desc">CENTRALFARMA (parc. 5/12)</span><span class="value">R$ 708,50</span></li>
+                <li><span class="date">—</span><span class="desc">HKM FARMÁCIA DE MANIPULAÇÃO (parc. 5/6)</span><span class="value">R$ 581,08</span></li>
+                <li><span class="date">—</span><span class="desc">BIOS FARMACÊUTICA (parc. 5/6)</span><span class="value">R$ 1.511,33</span></li>
+                <li><span class="date">—</span><span class="desc">CENTRALFARMA (parc. 4/10)</span><span class="value">R$ 114,42</span></li>
+                <li><span class="date">—</span><span class="desc">HKM FARMÁCIA DE MANIPULAÇÃO (parc. 4/6)</span><span class="value">R$ 1.332,33</span></li>
+                <li><span class="date">—</span><span class="desc">HKM FARMÁCIA DE MANIPULAÇÃO (parc. 3/6)</span><span class="value">R$ 451,83</span></li>
+                <li><span class="date">—</span><span class="desc">CENTRALFARMA (parc. 3/10)</span><span class="value">R$ 758,32</span></li>
+                <li><span class="date">—</span><span class="desc">ASA*UNIKKA PHARMA (parc. 3/6)</span><span class="value">R$ 5.250,01</span></li>
+                <li><span class="date">—</span><span class="desc">BIOS FARMACÊUTICA (parc. 3/4)</span><span class="value">R$ 524,00</span></li>
+                <li><span class="date">—</span><span class="desc">HKM FARMÁCIA DE MANIPULAÇÃO (parc. 2/6)</span><span class="value">R$ 246,16</span></li>
+                <li><span class="date">—</span><span class="desc">BIOS FARMACÊUTICA (parc. 2/6)</span><span class="value">R$ 2.013,34</span></li>
+                <li><span class="date">—</span><span class="desc">STIN PHARMA ANANDA BA (parc. 2/2)</span><span class="value">R$ 932,50</span></li>
+                <li><span class="date">—</span><span class="desc">BIO MEDS PHARMACEUTICA (parc. 1/3)</span><span class="value">R$ 5.356,68</span></li>
+                <li><span class="date">—</span><span class="desc">BIOS FARMACÊUTICA (parc. 1/6)</span><span class="value">R$ 976,70</span></li>
+                <li><span class="date">—</span><span class="desc">BIOS FARMACÊUTICA (parc. 1/8)</span><span class="value">R$ 1.923,00</span></li>
+                <li><span class="date">—</span><span class="desc">BIO MEDS PHARMACEUTICA (parc. 1/3)</span><span class="value">R$ 8.043,34</span></li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="category">
+            <summary>
+              <div class="summary-left"><div class="icon">🖥️</div><div class="summary-text"><strong>2. Equipamentos e locação técnica</strong><span>Itens e parcelas de tecnologia/equipamentos</span></div></div>
+              <div class="summary-right"><span class="amount-badge">R$ 32.300,00</span><span class="chevron">⌄</span></div>
+            </summary>
+            <div class="content">
+              <ul class="entries">
+                <li><span class="date">—</span><span class="desc">CONTOURLINE EQUIPAMENTOS (parc. 3/10)</span><span class="value">R$ 840,00</span></li>
+                <li><span class="date">—</span><span class="desc">CONTOURLINE EQUIPAMENTOS (parc. 2/10)</span><span class="value">R$ 30.160,00</span></li>
+                <li><span class="date">20/01</span><span class="desc">Pix para WILSON LUIS DA SILVA</span><span class="value">R$ 1.300,00</span></li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="category">
+            <summary>
+              <div class="summary-left"><div class="icon">📣</div><div class="summary-text"><strong>3. Marketing e publicidade</strong><span>Campanhas, tráfego e fornecedores</span></div></div>
+              <div class="summary-right"><span class="amount-badge">R$ 11.840,50</span><span class="chevron">⌄</span></div>
+            </summary>
+            <div class="content">
+              <ul class="entries">
+                <li><span class="date">03/01</span><span class="desc">B2 SOLUÇÕES EM MARKETING LTDA</span><span class="value">R$ 3.200,00</span></li>
+                <li><span class="date">23/01</span><span class="desc">I9 MARKETING LTDA</span><span class="value">R$ 2.509,00</span></li>
+                <li><span class="date">—</span><span class="desc">DL *GOOGLE ADS</span><span class="value">R$ 2.000,00</span></li>
+                <li><span class="date">—</span><span class="desc">DL *GOOGLE ADS</span><span class="value">R$ 2.000,00</span></li>
+                <li><span class="date">—</span><span class="desc">DL *GOOGLE ADS</span><span class="value">R$ 2.131,96</span></li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="category">
+            <summary>
+              <div class="summary-left"><div class="icon">👥</div><div class="summary-text"><strong>4. RH (equipe e nutrição)</strong><span>Pagamentos de equipe, nutrição e apoio</span></div></div>
+              <div class="summary-right"><span class="amount-badge">R$ 16.859,82</span><span class="chevron">⌄</span></div>
+            </summary>
+            <div class="content"><ul class="entries">
+              <li><span class="date">05/01</span><span class="desc">Pix para DM CONSULTORIA EM RH</span><span class="value">R$ 1.250,00</span></li>
+              <li><span class="date">07/01</span><span class="desc">Pix para LUCIANA PORTO</span><span class="value">R$ 312,24</span></li>
+              <li><span class="date">07/01</span><span class="desc">Pix para LUCIANA PORTO</span><span class="value">R$ 3.158,70</span></li>
+              <li><span class="date">07/01</span><span class="desc">Pix para NAYARA FERNANDES DAL SASSO</span><span class="value">R$ 5.820,00</span></li>
+              <li><span class="date">08/01</span><span class="desc">Pix para MARICY SANT ANNA MARTINS</span><span class="value">R$ 1.927,61</span></li>
+              <li><span class="date">08/01</span><span class="desc">Pix para MILLENE CAROLINE CASTRO COSTA</span><span class="value">R$ 3.689,87</span></li>
+              <li><span class="date">08/01</span><span class="desc">Pix para ROSINETE NUNES SANTOS</span><span class="value">R$ 300,00</span></li>
+              <li><span class="date">12/01</span><span class="desc">Pix para MILLENE CAROLINE CASTRO COSTA</span><span class="value">R$ 913,10</span></li>
+              <li><span class="date">12/01</span><span class="desc">Pix para MARICY SANT ANNA MARTINS</span><span class="value">R$ 913,10</span></li>
+              <li><span class="date">27/01</span><span class="desc">Pix para MARICY SANT ANNA MARTINS</span><span class="value">R$ 91,98</span></li>
+            </ul></div>
+          </details>
+
+          <details class="category">
+            <summary>
+              <div class="summary-left"><div class="icon">🏢</div><div class="summary-text"><strong>5. Imóvel (aluguel e condomínio)</strong><span>Custos fixos do imóvel</span></div></div>
+              <div class="summary-right"><span class="amount-badge">R$ 9.852,70</span><span class="chevron">⌄</span></div>
+            </summary>
+            <div class="content"><ul class="entries">
+              <li><span class="date">03/01</span><span class="desc">CONDOMÍNIO EDIFÍCIO VILLA OFFICES</span><span class="value">R$ 4.781,65</span></li>
+              <li><span class="date">03/01</span><span class="desc">Pix para ANITA ROTTER</span><span class="value">R$ 5.071,05</span></li>
+            </ul></div>
+          </details>
+
+          <details class="category">
+            <summary>
+              <div class="summary-left"><div class="icon">🏛️</div><div class="summary-text"><strong>6. Tributos e encargos</strong><span>Taxas, conselhos e DARFs</span></div></div>
+              <div class="summary-right"><span class="amount-badge">R$ 23.222,72</span><span class="chevron">⌄</span></div>
+            </summary>
+            <div class="content"><ul class="entries">
+              <li><span class="date">12/01</span><span class="desc">PM SÃO PAULO</span><span class="value">R$ 7.774,20</span></li>
+              <li><span class="date">19/01</span><span class="desc">CONSELHO REG. DE MEDICINA</span><span class="value">R$ 360,60</span></li>
+              <li><span class="date">19/01</span><span class="desc">CONSELHO REG. DE MEDICINA</span><span class="value">R$ 900,60</span></li>
+              <li><span class="date">22/01</span><span class="desc">TRIBUTOS FEDERAIS DARF</span><span class="value">R$ 2.526,62</span></li>
+              <li><span class="date">22/01</span><span class="desc">TRIBUTOS FEDERAIS DARF</span><span class="value">R$ 11.661,30</span></li>
+            </ul></div>
+          </details>
+
+          <details class="category">
+            <summary>
+              <div class="summary-left"><div class="icon">💻</div><div class="summary-text"><strong>7. Tecnologia, software e telecom</strong><span>Internet e licenciamento</span></div></div>
+              <div class="summary-right"><span class="amount-badge">R$ 513,69</span><span class="chevron">⌄</span></div>
+            </summary>
+            <div class="content"><ul class="entries">
+              <li><span class="date">08/01</span><span class="desc">VIVO (GVT)</span><span class="value">R$ 129,99</span></li>
+              <li><span class="date">13/01</span><span class="desc">SUPPORT HEALTH LICENCIAMENTO</span><span class="value">R$ 383,70</span></li>
+            </ul></div>
+          </details>
+
+          <details class="category">
+            <summary>
+              <div class="summary-left"><div class="icon">🛡️</div><div class="summary-text"><strong>8. Seguros</strong><span>Parcela de seguro</span></div></div>
+              <div class="summary-right"><span class="amount-badge">R$ 242,94</span><span class="chevron">⌄</span></div>
+            </summary>
+            <div class="content"><ul class="entries">
+              <li><span class="date">—</span><span class="desc">AKAD SEGUROS (parc. 2/10)</span><span class="value">R$ 242,94</span></li>
+            </ul></div>
+          </details>
+
+          <details class="category">
+            <summary>
+              <div class="summary-left"><div class="icon">📋</div><div class="summary-text"><strong>9. Serviços administrativos e operacionais</strong><span>Serviços, lotes e despesas operacionais</span></div></div>
+              <div class="summary-right"><span class="amount-badge">R$ 11.621,96</span><span class="chevron">⌄</span></div>
+            </summary>
+            <div class="content"><ul class="entries">
+              <li><span class="date">05/01</span><span class="desc">ASA ASSESSORIA (3 lançamentos) — R$ 813,75; R$ 775,00; R$ 250,00</span><span class="value">R$ 1.838,75</span></li>
+              <li><span class="date">14/01</span><span class="desc">Pix para SHIRLEY RODRIGUES</span><span class="value">R$ 151,20</span></li>
+              <li><span class="date">15/01</span><span class="desc">Pix para HELP SENIOR</span><span class="value">R$ 2.000,00</span></li>
+              <li><span class="date">20/01</span><span class="desc">Pagamento de lote #10</span><span class="value">R$ 4.648,47</span></li>
+              <li><span class="date">22/01</span><span class="desc">Pix para QUALILOG</span><span class="value">R$ 50,00</span></li>
+              <li><span class="date">23/01</span><span class="desc">Pagamento de lote #16</span><span class="value">R$ 194,54</span></li>
+              <li><span class="date">29/01</span><span class="desc">Pix para QUALILOG</span><span class="value">R$ 50,00</span></li>
+              <li><span class="date">30/01</span><span class="desc">Pagamento de lote #19 — excluído do total por tratar-se de composição não detalhada, mantido apenas na listagem bruta conforme extrato</span><span class="value">R$ 46.454,76</span></li>
+            </ul></div>
+          </details>
+
+          <div class="note">
+            <h3>Observações aplicadas</h3>
+            <ul>
+              <li>Foram ignoradas receitas e entradas.</li>
+              <li>Foram excluídos PIX enviados à PRISCILA COSTA HIME VALENTE, emissões de CDB e pagamento da fatura do cartão.</li>
+              <li>Todas as despesas do cartão foram consideradas, inclusive a parcela de R$ 30.160,00.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="fevereiro" class="month">
+      <div class="month-card">
+        <div class="month-header">
+          <div class="month-title">
+            <div>
+              <h2>Fevereiro — Conta corrente + cartão</h2>
+              <div class="month-subtitle">Painel completo com totais por categoria e lançamentos detalhados.</div>
+            </div>
+            <div class="total-box">
+              <div class="label">Total geral</div>
+              <div class="value">R$ 177.634,08</div>
+              <div class="split">Conta corrente: R$ 86.507,94<br>Cartão: R$ 91.126,14</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-item"><div class="name">Tributos e encargos</div><div class="amount">R$ 20.883,84</div></div>
+          <div class="summary-item"><div class="name">RH (equipe e nutrição)</div><div class="amount">R$ 24.967,78</div></div>
+          <div class="summary-item"><div class="name">Imóvel (aluguel e condomínio)</div><div class="amount">R$ 9.789,21</div></div>
+          <div class="summary-item"><div class="name">Saúde e benefícios PJ</div><div class="amount">R$ 3.946,05</div></div>
+          <div class="summary-item"><div class="name">Insumos médicos</div><div class="amount">R$ 40.645,18</div></div>
+          <div class="summary-item"><div class="name">Infraestrutura e manutenção</div><div class="amount">R$ 3.914,98</div></div>
+          <div class="summary-item"><div class="name">Marketing e comunicação</div><div class="amount">R$ 22.801,64</div></div>
+          <div class="summary-item"><div class="name">Tecnologia, software e internet</div><div class="amount">R$ 967,42</div></div>
+          <div class="summary-item"><div class="name">Equipamentos e utensílios</div><div class="amount">R$ 35.841,55</div></div>
+          <div class="summary-item"><div class="name">Serviços e despesas operacionais diversas</div><div class="amount">R$ 13.876,43</div></div>
+        </div>
+
+        <div class="accordion">
+          <details class="category" open>
+            <summary><div class="summary-left"><div class="icon">🏛️</div><div class="summary-text"><strong>1. Tributos e encargos</strong><span>Pagamentos de lote e tributos</span></div></div><div class="summary-right"><span class="amount-badge">R$ 20.883,84</span><span class="chevron">⌄</span></div></summary>
+            <div class="content"><ul class="entries">
+              <li><span class="date">02/02</span><span class="desc">PM SAO PAULO</span><span class="value">R$ 2.189,13</span></li>
+              <li><span class="date">20/02</span><span class="desc">Pagamento de lote #53</span><span class="value">R$ 6.093,62</span></li>
+              <li><span class="date">26/02</span><span class="desc">Pagamento de lote #65</span><span class="value">R$ 12.601,09</span></li>
+            </ul></div>
+          </details>
+
+          <details class="category">
+            <summary><div class="summary-left"><div class="icon">👥</div><div class="summary-text"><strong>2. RH (equipe e nutrição)</strong><span>Equipe, nutrição e apoio</span></div></div><div class="summary-right"><span class="amount-badge">R$ 24.967,78</span><span class="chevron">⌄</span></div></summary>
+            <div class="content"><ul class="entries">
+              <li><span class="date">06/02</span><span class="desc">Débora Silva de Souza</span><span class="value">R$ 595,39</span></li>
+              <li><span class="date">06/02</span><span class="desc">Débora Silva de Souza</span><span class="value">R$ 32,40</span></li>
+              <li><span class="date">10/02</span><span class="desc">Débora Silva de Souza</span><span class="value">R$ 54,00</span></li>
+              <li><span class="date">06/02</span><span class="desc">MARICY SANT ANNA MARTINS</span><span class="value">R$ 2.662,34</span></li>
+              <li><span class="date">10/02</span><span class="desc">MARICY SANT ANNA MARTINS</span><span class="value">R$ 21,60</span></li>
+              <li><span class="date">11/02</span><span class="desc">MARICY SANT ANNA MARTINS</span><span class="value">R$ 350,00</span></li>
+              <li><span class="date">06/02</span><span class="desc">Millene Caroline Castro Costa</span><span class="value">R$ 4.734,13</span></li>
+              <li><span class="date">10/02</span><span class="desc">Millene Caroline Castro Costa</span><span class="value">R$ 4.116,76</span></li>
+              <li><span class="date">10/02</span><span class="desc">Millene Caroline Castro Costa</span><span class="value">R$ 70,60</span></li>
+              <li><span class="date">06/02</span><span class="desc">NAYARA FERNANDES DAL SASSO</span><span class="value">R$ 4.935,00</span></li>
+              <li><span class="date">25/02</span><span class="desc">NAYARA FERNANDES DAL SASSO</span><span class="value">R$ 450,00</span></li>
+              <li><span class="date">09/02</span><span class="desc">SCARLETT GONCALVES RODRIGUES</span><span class="value">R$ 318,92</span></li>
+              <li><span class="date">13/02</span><span class="desc">LUCIANA PORTO NUTRICIONISTA</span><span class="value">R$ 2.401,64</span></li>
+              <li><span class="date">13/02</span><span class="desc">LUCIANA PORTO NUTRICIONISTA</span><span class="value">R$ 75,00</span></li>
+              <li><span class="date">22/02</span><span class="desc">LUCIANA PORTO NUTRICIONISTA</span><span class="value">R$ 2.750,00</span></li>
+              <li><span class="date">12/02</span><span class="desc">Rosinete Nunes Santos</span><span class="value">R$ 300,00</span></li>
+              <li><span class="date">22/02</span><span class="desc">TARCILA STAVE DONATZ</span><span class="value">R$ 1.100,00</span></li>
+            </ul></div>
+          </details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">🏢</div><div class="summary-text"><strong>3. Imóvel (aluguel e condomínio)</strong><span>Custos fixos do imóvel</span></div></div><div class="summary-right"><span class="amount-badge">R$ 9.789,21</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">02/02</span><span class="desc">CONDOMINIO EDIFICIO VILLA OFFICES</span><span class="value">R$ 4.718,16</span></li><li><span class="date">02/02</span><span class="desc">Pix enviado para ANITA ROTTER</span><span class="value">R$ 5.071,05</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">❤️</div><div class="summary-text"><strong>4. Saúde e benefícios PJ</strong><span>Plano e benefício empresarial</span></div></div><div class="summary-right"><span class="amount-badge">R$ 3.946,05</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">02/02</span><span class="desc">AMIL ASSISTENCIA ME</span><span class="value">R$ 3.946,05</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">💉</div><div class="summary-text"><strong>5. Insumos médicos</strong><span>Lançamentos do mês e parcelas recorrentes</span></div></div><div class="summary-right"><span class="amount-badge">R$ 40.645,18</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries">
+            <li><span class="date">02/02</span><span class="desc">MEDVIVA PRODUTOS PARA A SAUDE</span><span class="value">R$ 1.332,96</span></li>
+            <li><span class="date">12/02</span><span class="desc">MEDVIVA PRODUTOS PARA A SAUDE</span><span class="value">R$ 433,00</span></li>
+            <li><span class="date">23/02</span><span class="desc">MEDVIVA PRODUTOS PARA A SAUDE</span><span class="value">R$ 1.332,97</span></li>
+            <li><span class="date">15/01</span><span class="desc">MERCADOLIVRE*DRLUVAS</span><span class="value">R$ 407,70</span></li>
+            <li><span class="date">16/01</span><span class="desc">HKM FARMACIA DE MANIPU - Parcela 1/6</span><span class="value">R$ 1.789,50</span></li>
+            <li><span class="date">20/01</span><span class="desc">HKM FARMACIA DE MANIPU - Estorno</span><span class="value">-R$ 104,00</span></li>
+            <li><span class="date">20/01</span><span class="desc">PG *SALUS BRASIL SALUS - Parcela 1/10</span><span class="value">R$ 165,00</span></li>
+            <li><span class="date">29/01</span><span class="desc">PG *GR MED PRODUTOS ME</span><span class="value">R$ 1.690,10</span></li>
+            <li><span class="date">04/02</span><span class="desc">TECHDERME COSMETICOS L - Parcela 1/2</span><span class="value">R$ 495,00</span></li>
+            <li><span class="date">24/04</span><span class="desc">CENTRAL INJETAVEIS - Parcela 10/10</span><span class="value">R$ 169,22</span></li>
+            <li><span class="date">24/06</span><span class="desc">CENTRALFARMA - Parcela 8/12</span><span class="value">R$ 622,41</span></li>
+            <li><span class="date">30/07</span><span class="desc">CENTRALFARMA - Parcela 7/12</span><span class="value">R$ 550,35</span></li>
+            <li><span class="date">19/08</span><span class="desc">CENTRALFARMA - Parcela 6/12</span><span class="value">R$ 708,50</span></li>
+            <li><span class="date">19/08</span><span class="desc">HKM FARMACIA DE MANIPU - Parcela 6/6</span><span class="value">R$ 581,08</span></li>
+            <li><span class="date">01/09</span><span class="desc">BIOS FARMACEUTICA - Parcela 6/6</span><span class="value">R$ 1.511,33</span></li>
+            <li><span class="date">16/09</span><span class="desc">CENTRALFARMA - Parcela 5/10</span><span class="value">R$ 114,42</span></li>
+            <li><span class="date">16/09</span><span class="desc">HKM FARMACIA DE MANIPU - Parcela 5/6</span><span class="value">R$ 1.332,33</span></li>
+            <li><span class="date">15/10</span><span class="desc">BIOS FARMACEUTICA - Parcela 4/6</span><span class="value">R$ 1.970,00</span></li>
+            <li><span class="date">27/10</span><span class="desc">HKM FARMACIA DE MANIPU - Parcela 4/6</span><span class="value">R$ 451,83</span></li>
+            <li><span class="date">27/10</span><span class="desc">CENTRALFARMA - Parcela 4/10</span><span class="value">R$ 758,32</span></li>
+            <li><span class="date">29/10</span><span class="desc">ASA*UNIKKA PHARMA MEDI - Parcela 4/6</span><span class="value">R$ 5.250,01</span></li>
+            <li><span class="date">30/10</span><span class="desc">BIOS FARMACEUTICA - Parcela 4/4</span><span class="value">R$ 524,00</span></li>
+            <li><span class="date">07/11</span><span class="desc">HKM FARMACIA DE MANIPU - Parcela 3/6</span><span class="value">R$ 246,16</span></li>
+            <li><span class="date">24/11</span><span class="desc">BIOS FARMACEUTICA - Parcela 3/6</span><span class="value">R$ 2.013,34</span></li>
+            <li><span class="date">12/12</span><span class="desc">BIO MEDS PHARMACEUTICA - Parcela 2/3</span><span class="value">R$ 5.356,66</span></li>
+            <li><span class="date">16/12</span><span class="desc">BIOS FARMACEUTICA - Parcela 2/6</span><span class="value">R$ 976,66</span></li>
+            <li><span class="date">19/12</span><span class="desc">BIOS FARMACEUTICA - Parcela 2/8</span><span class="value">R$ 1.923,00</span></li>
+            <li><span class="date">05/01</span><span class="desc">BIO MEDS PHARMACEUTICA - Parcela 2/3</span><span class="value">R$ 8.043,33</span></li>
+          </ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">🧰</div><div class="summary-text"><strong>6. Infraestrutura e manutenção</strong><span>Peças e instalações</span></div></div><div class="summary-right"><span class="amount-badge">R$ 3.914,98</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">10/02</span><span class="desc">Pix enviado para BLUE PECAS</span><span class="value">R$ 1.099,99</span></li><li><span class="date">26/02</span><span class="desc">Pix enviado para Lithium Instalações Ltda</span><span class="value">R$ 1.715,00</span></li><li><span class="date">26/02</span><span class="desc">Pix enviado para BLUE PECAS</span><span class="value">R$ 1.099,99</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">📣</div><div class="summary-text"><strong>7. Marketing e comunicação</strong><span>Marketing, academy e ads</span></div></div><div class="summary-right"><span class="amount-badge">R$ 22.801,64</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">05/02</span><span class="desc">B2 SOLUCOES EM MARKETING LTDA</span><span class="value">R$ 3.200,00</span></li><li><span class="date">23/02</span><span class="desc">I9 MARKETING LTDA</span><span class="value">R$ 1.280,00</span></li><li><span class="date">11/01</span><span class="desc">GOOGLE ADS2028283035</span><span class="value">R$ 2.000,00</span></li><li><span class="date">20/01</span><span class="desc">HUBLA *DVACADEMY</span><span class="value">R$ 4.000,00</span></li><li><span class="date">21/01</span><span class="desc">GOOGLE ADS2028283035</span><span class="value">R$ 2.000,00</span></li><li><span class="date">01/02</span><span class="desc">GOOGLE ADS2028283035</span><span class="value">R$ 1.988,31</span></li><li><span class="date">02/02</span><span class="desc">HUBLA *DVACADEMY</span><span class="value">R$ 8.333,33</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">💻</div><div class="summary-text"><strong>8. Tecnologia, software e internet</strong><span>Telefonia, licenças e domínios</span></div></div><div class="summary-right"><span class="amount-badge">R$ 967,42</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">09/02</span><span class="desc">VIVO - GVT</span><span class="value">R$ 129,99</span></li><li><span class="date">13/02</span><span class="desc">SUPPORT HEALTH LICENCIAMENTO E</span><span class="value">R$ 427,60</span></li><li><span class="date">23/02</span><span class="desc">Pix enviado para NIC. BR</span><span class="value">R$ 76,00</span></li><li><span class="date">09/01</span><span class="desc">SSO</span><span class="value">R$ 50,00</span></li><li><span class="date">14/01</span><span class="desc">JUSBRASIL</span><span class="value">R$ 119,90</span></li><li><span class="date">02/02</span><span class="desc">DM *GODADDYCOML</span><span class="value">R$ 163,93</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">🖥️</div><div class="summary-text"><strong>9. Equipamentos e utensílios</strong><span>Máquinas, utilidades e parcelas</span></div></div><div class="summary-right"><span class="amount-badge">R$ 35.841,55</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">02/02</span><span class="desc">Pix enviado para FAST SHOP S.A</span><span class="value">R$ 2.586,35</span></li><li><span class="date">20/02</span><span class="desc">Nespresso PROCESSADO POR ADYEN</span><span class="value">R$ 1.645,00</span></li><li><span class="date">24/04</span><span class="desc">MLP *MAGAZINELUIZA - Parcela 10/10</span><span class="value">R$ 160,89</span></li><li><span class="date">26/04</span><span class="desc">NESPRESSO - Parcela 10/10</span><span class="value">R$ 128,48</span></li><li><span class="date">26/04</span><span class="desc">UTILIDADES CLINICAS - Parcela 10/10</span><span class="value">R$ 73,83</span></li><li><span class="date">06/06</span><span class="desc">NESPRESSO - Parcela 8/10</span><span class="value">R$ 77,50</span></li><li><span class="date">16/09</span><span class="desc">NESPRESSO - Parcela 5/10</span><span class="value">R$ 169,50</span></li><li><span class="date">31/10</span><span class="desc">CONTOURLINE EQUIPAMENT - Parcela 4/10</span><span class="value">R$ 840,00</span></li><li><span class="date">13/11</span><span class="desc">CONTOURLINE EQUIPAMENT - Parcela 3/10 — UNYQUE PRO, NOVA TECNOLOGIA</span><span class="value">R$ 30.160,00</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">📋</div><div class="summary-text"><strong>10. Serviços e despesas operacionais diversas</strong><span>Operacional, marketplace, compras e seguro</span></div></div><div class="summary-right"><span class="amount-badge">R$ 13.876,43</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">10/02</span><span class="desc">Pagamento null</span><span class="value">R$ 6.882,00</span></li><li><span class="date">11/02</span><span class="desc">Pix enviado para INCENTIV ADMINISTRACAO E SERVICOS</span><span class="value">R$ 200,00</span></li><li><span class="date">21/02</span><span class="desc">Pix enviado para PIX Marketplace</span><span class="value">R$ 3.090,28</span></li><li><span class="date">24/02</span><span class="desc">Pix enviado para PIX Marketplace</span><span class="value">R$ 389,93</span></li><li><span class="date">22/01</span><span class="desc">MERCADOLIVRE4PRODUTO</span><span class="value">R$ 388,13</span></li><li><span class="date">22/01</span><span class="desc">MERCADOLIVREMERCADOL</span><span class="value">R$ 652,00</span></li><li><span class="date">02/02</span><span class="desc">MERCADOMERCADOLIVRE</span><span class="value">R$ 34,99</span></li><li><span class="date">04/02</span><span class="desc">MERCADOLIVRE7PRODUTOS</span><span class="value">R$ 658,45</span></li><li><span class="date">04/02</span><span class="desc">MERCADOLIVREMERCADOL</span><span class="value">R$ 799,00</span></li><li><span class="date">08/01</span><span class="desc">MERCADOLIVRE6PRODUTO</span><span class="value">R$ 443,45</span></li><li><span class="date">09/10</span><span class="desc">MERCADOLIVRE*TELPETRO - Parcela 4/4</span><span class="value">R$ 36,72</span></li><li><span class="date">09/11</span><span class="desc">PG *NUVEM ARMARIOFASHI - Parcela 3/6</span><span class="value">R$ 58,54</span></li><li><span class="date">03/12</span><span class="desc">AKAD SEGUROS - Parcela 3/10</span><span class="value">R$ 242,94</span></li></ul></div></details>
+        </div>
+      </div>
+    </section>
+
+    <section id="marco" class="month">
+      <div class="month-card">
+        <div class="month-header">
+          <div class="month-title">
+            <div>
+              <h2>Março — Conta corrente + cartão</h2>
+              <div class="month-subtitle">Versão corrigida com totais por categoria e relação completa dos lançamentos.</div>
+            </div>
+            <div class="total-box">
+              <div class="label">Total geral</div>
+              <div class="value">R$ 188.401,60</div>
+              <div class="split">Conta corrente: R$ 92.506,65<br>Cartão: R$ 95.894,95</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-item"><div class="name">Tributos e encargos</div><div class="amount">R$ 7.339,53</div></div>
+          <div class="summary-item"><div class="name">RH (equipe e nutrição)</div><div class="amount">R$ 32.896,12</div></div>
+          <div class="summary-item"><div class="name">Imóvel (aluguel e condomínio)</div><div class="amount">R$ 9.991,73</div></div>
+          <div class="summary-item"><div class="name">Saúde e benefícios PJ</div><div class="amount">R$ 3.977,88</div></div>
+          <div class="summary-item"><div class="name">Insumos médicos e farmacêuticos</div><div class="amount">R$ 70.025,54</div></div>
+          <div class="summary-item"><div class="name">Equipamentos e locação técnica</div><div class="amount">R$ 31.000,00</div></div>
+          <div class="summary-item"><div class="name">Tecnologia, software, internet e meios de pagamento</div><div class="amount">R$ 9.403,77</div></div>
+          <div class="summary-item"><div class="name">Infraestrutura, manutenção e consumo</div><div class="amount">R$ 2.378,59</div></div>
+          <div class="summary-item"><div class="name">Seguros</div><div class="amount">R$ 242,94</div></div>
+          <div class="summary-item"><div class="name">Educação e treinamento</div><div class="amount">R$ 12.333,00</div></div>
+        </div>
+
+        <div class="accordion">
+          <details class="category" open><summary><div class="summary-left"><div class="icon">🏛️</div><div class="summary-text"><strong>1. Tributos e encargos</strong><span>Tributos municipais</span></div></div><div class="summary-right"><span class="amount-badge">R$ 7.339,53</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">02/03</span><span class="desc">PM SAO PAULO</span><span class="value">R$ 2.189,13</span></li><li><span class="date">12/03</span><span class="desc">PM SAO PAULO</span><span class="value">R$ 5.150,40</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">👥</div><div class="summary-text"><strong>2. RH (equipe e nutrição)</strong><span>Equipe, rescisão e nutrição</span></div></div><div class="summary-right"><span class="amount-badge">R$ 32.896,12</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">01/03</span><span class="desc">Rosinete Nunes Santos</span><span class="value">R$ 300,00</span></li><li><span class="date">06/03</span><span class="desc">SCARLETT GONCALVES RODRIGUES</span><span class="value">R$ 3.511,35</span></li><li><span class="date">06/03</span><span class="desc">MARICY SANT ANNA MARTINS (RESCISÃO)</span><span class="value">R$ 10.502,94</span></li><li><span class="date">06/03</span><span class="desc">NAYARA FERNANDES DAL SASSO</span><span class="value">R$ 4.999,00</span></li><li><span class="date">06/03</span><span class="desc">Débora Silva de Souza</span><span class="value">R$ 3.531,80</span></li><li><span class="date">06/03</span><span class="desc">Millene Caroline Castro Costa</span><span class="value">R$ 7.370,08</span></li><li><span class="date">08/03</span><span class="desc">LUCIANA PORTO NUTRICIONISTA</span><span class="value">R$ 1.355,00</span></li><li><span class="date">09/03</span><span class="desc">Rosinete Nunes Santos</span><span class="value">R$ 300,00</span></li><li><span class="date">11/03</span><span class="desc">Millene Caroline Castro Costa</span><span class="value">R$ 525,95</span></li><li><span class="date">11/03</span><span class="desc">SCARLETT GONCALVES RODRIGUES</span><span class="value">R$ 500,00</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">🏢</div><div class="summary-text"><strong>3. Imóvel (aluguel e condomínio)</strong><span>Custos fixos do imóvel</span></div></div><div class="summary-right"><span class="amount-badge">R$ 9.991,73</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">02/03</span><span class="desc">ANITA ROTTER</span><span class="value">R$ 7.354,03</span></li><li><span class="date">02/03</span><span class="desc">CONDOMINIO EDIFICIO VILLA OFFICES</span><span class="value">R$ 2.637,70</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">❤️</div><div class="summary-text"><strong>4. Saúde e benefícios PJ</strong><span>Assistência médica empresarial</span></div></div><div class="summary-right"><span class="amount-badge">R$ 3.977,88</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">02/03</span><span class="desc">AMIL ASSISTENCIA ME</span><span class="value">R$ 3.977,88</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">💉</div><div class="summary-text"><strong>5. Insumos médicos e farmacêuticos</strong><span>Conta corrente e parcelas recorrentes</span></div></div><div class="summary-right"><span class="amount-badge">R$ 70.025,54</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">03/03</span><span class="desc">STIN PHARMA</span><span class="value">R$ 8.320,20</span></li><li><span class="date">04/03</span><span class="desc">HELP SENIOR</span><span class="value">R$ 1.900,00</span></li><li><span class="date">04/03</span><span class="desc">STIN PHARMA</span><span class="value">R$ 22.347,20</span></li><li><span class="date">04/03</span><span class="desc">STIN PHARMA</span><span class="value">R$ 1.925,00</span></li><li><span class="date">12/03</span><span class="desc">MEDVIVA PRODUTOS PARA A SAUDE</span><span class="value">R$ 512,95</span></li><li><span class="date">16/jan</span><span class="desc">HKM FARMACIA DE MANIPU (2/6)</span><span class="value">R$ 1.789,50</span></li><li><span class="date">04/fev</span><span class="desc">TECHDERME COSMETICOS (2/2)</span><span class="value">R$ 495,00</span></li><li><span class="date">12/fev</span><span class="desc">BIOS FARMACEUTICA (1/6)</span><span class="value">R$ 2.138,29</span></li><li><span class="date">13/fev</span><span class="desc">STIN PHARMA (1/2)</span><span class="value">R$ 1.186,20</span></li><li><span class="date">23/fev</span><span class="desc">HKM FARMACIA DE MANIPU (1/6)</span><span class="value">R$ 1.195,35</span></li><li><span class="date">02/mar</span><span class="desc">FARMACONDE</span><span class="value">R$ 91,04</span></li><li><span class="date">04/mar</span><span class="desc">APP PODKOMBUCHA (1/5)</span><span class="value">R$ 41,63</span></li><li><span class="date">20/fev</span><span class="desc">TOSKANI MED (1/5)</span><span class="value">R$ 1.072,00</span></li><li><span class="date">24/jun</span><span class="desc">CENTRALFARMA (9/12)</span><span class="value">R$ 622,41</span></li><li><span class="date">30/jul</span><span class="desc">CENTRALFARMA (8/12)</span><span class="value">R$ 550,35</span></li><li><span class="date">19/ago</span><span class="desc">CENTRALFARMA (7/12)</span><span class="value">R$ 708,50</span></li><li><span class="date">16/set</span><span class="desc">CENTRALFARMA (6/10)</span><span class="value">R$ 114,42</span></li><li><span class="date">16/set</span><span class="desc">HKM FARMACIA DE MANIPU (6/6)</span><span class="value">R$ 1.332,33</span></li><li><span class="date">15/out</span><span class="desc">BIOS FARMACEUTICA (5/6)</span><span class="value">R$ 1.970,00</span></li><li><span class="date">27/out</span><span class="desc">HKM FARMACIA DE MANIPU (5/6)</span><span class="value">R$ 451,83</span></li><li><span class="date">27/out</span><span class="desc">CENTRALFARMA (5/10)</span><span class="value">R$ 758,32</span></li><li><span class="date">29/out</span><span class="desc">ASA UNIKKA PHARMA MEDI (5/6)</span><span class="value">R$ 5.250,01</span></li><li><span class="date">24/nov</span><span class="desc">BIOS FARMACEUTICA (4/6)</span><span class="value">R$ 2.013,34</span></li><li><span class="date">07/nov</span><span class="desc">HKM FARMACIA DE MANIPU (4/6)</span><span class="value">R$ 246,16</span></li><li><span class="date">12/dez</span><span class="desc">BIO MEDS PHARMACEUTICA (3/3)</span><span class="value">R$ 5.356,66</span></li><li><span class="date">16/dez</span><span class="desc">BIOS FARMACEUTICA (3/6)</span><span class="value">R$ 976,66</span></li><li><span class="date">19/dez</span><span class="desc">BIOS FARMACEUTICA (3/8)</span><span class="value">R$ 1.923,00</span></li><li><span class="date">05/jan</span><span class="desc">BIO MEDS PHARMACEUTICA (3/3)</span><span class="value">R$ 8.043,33</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">🖥️</div><div class="summary-text"><strong>6. Equipamentos e locação técnica</strong><span>Tecnologia e equipamento parcelado</span></div></div><div class="summary-right"><span class="amount-badge">R$ 31.000,00</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">31/out</span><span class="desc">CONTOURLINE EQUIPAMENT (5/10)</span><span class="value">R$ 840,00</span></li><li><span class="date">13/nov</span><span class="desc">CONTOURLINE EQUIPAMENT (4/10) — UNYQUE PRO, TECNOLOGIA NOVA</span><span class="value">R$ 30.160,00</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">💻</div><div class="summary-text"><strong>7. Tecnologia, software, internet e meios de pagamento</strong><span>Adquirência, telefonia, software e ads alocados</span></div></div><div class="summary-right"><span class="amount-badge">R$ 9.403,77</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">02/03</span><span class="desc">Pagar.me</span><span class="value">R$ 578,08</span></li><li><span class="date">02/03</span><span class="desc">Pagar.me</span><span class="value">R$ 91,59</span></li><li><span class="date">04/03</span><span class="desc">Vindi</span><span class="value">R$ 139,78</span></li><li><span class="date">05/03</span><span class="desc">Certifica Soluções</span><span class="value">R$ 229,00</span></li><li><span class="date">09/03</span><span class="desc">Vivo</span><span class="value">R$ 129,99</span></li><li><span class="date">10/03</span><span class="desc">Support Health</span><span class="value">R$ 427,60</span></li><li><span class="date">10/fev</span><span class="desc">GOOGLE ADS</span><span class="value">R$ 2.000,00</span></li><li><span class="date">11/fev</span><span class="desc">GOOGLE ADS</span><span class="value">R$ 90,20</span></li><li><span class="date">28/fev</span><span class="desc">GOOGLE ADS</span><span class="value">R$ 2.000,00</span></li><li><span class="date">01/mar</span><span class="desc">GOOGLE ADS</span><span class="value">R$ 1.003,67</span></li><li><span class="date">14/fev</span><span class="desc">JUSBRASIL</span><span class="value">R$ 119,90</span></li><li><span class="date">09/nov</span><span class="desc">PG NUVEM ARMARIOFASHI (4/6)</span><span class="value">R$ 58,54</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">🧰</div><div class="summary-text"><strong>8. Infraestrutura, manutenção e consumo</strong><span>Compras, manutenção e consumo interno</span></div></div><div class="summary-right"><span class="amount-badge">R$ 2.378,59</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">05/03</span><span class="desc">Integração Segurança & Meio Ambiente</span><span class="value">R$ 400,00</span></li><li><span class="date">13/03</span><span class="desc">Wilson Luis da Silva</span><span class="value">R$ 1.300,00</span></li><li><span class="date">16/set</span><span class="desc">NESPRESSO (6/10)</span><span class="value">R$ 169,50</span></li><li><span class="date">06/jun</span><span class="desc">NESPRESSO (9/10)</span><span class="value">R$ 77,50</span></li><li><span class="date">09/fev</span><span class="desc">DUTRA MAQUINAS</span><span class="value">R$ 159,50</span></li><li><span class="date">09/fev</span><span class="desc">RAPPI HPS COML VAREJ</span><span class="value">R$ 42,85</span></li><li><span class="date">01/mar</span><span class="desc">AVATIM ECOMM</span><span class="value">R$ 303,30</span></li><li><span class="date">02/mar</span><span class="desc">MERCADOLIVRE (12PRODUT)</span><span class="value">R$ 303,33</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">🛡️</div><div class="summary-text"><strong>9. Seguros</strong><span>Seguro parcelado</span></div></div><div class="summary-right"><span class="amount-badge">R$ 242,94</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">03/dez</span><span class="desc">AKAD SEGUROS (4/10)</span><span class="value">R$ 242,94</span></li></ul></div></details>
+
+          <details class="category"><summary><div class="summary-left"><div class="icon">🎓</div><div class="summary-text"><strong>10. Educação e treinamento</strong><span>Treinamentos e academy</span></div></div><div class="summary-right"><span class="amount-badge">R$ 12.333,00</span><span class="chevron">⌄</span></div></summary><div class="content"><ul class="entries"><li><span class="date">02/mar</span><span class="desc">HBLDVACADEMY</span><span class="value">R$ 8.333,00</span></li><li><span class="date">20/fev</span><span class="desc">HBLDVACADEMY</span><span class="value">R$ 4.000,00</span></li></ul></div></details>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-space"></div>
+  </div>
+</body>
+</html>
